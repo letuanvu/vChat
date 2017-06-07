@@ -10,6 +10,7 @@ http.listen(3000, function () {
 //Controller Imports
 import userController from './controllers/userController';
 import roomController from './controllers/roomController';
+import messageController from './controllers/messageController';
 
 mongoose.Promise = global.Promise;
 // Or using promises
@@ -49,12 +50,38 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                     console.log('csa-hasOneChat:data: ', data);
                     console.log('csa-hasOneChat:socket.uInfo: ', socket.uInfo);
                     // console.log(socket.uInfo._id, data.u_id);
-                    roomController.checkHasOneChat(socket.uInfo._id, data.u_id)
+                    roomController.checkHasOneChat(socket.uInfo._id.toString(), data.u_id)
                         .then((res) => {
                             if (res.newRoom) {
                                 console.log('newRoom');
                             }
+                            console.log('roomController.checkHasOneChat:: res.data');
                             console.log(res.data);
+                            socket.uInfo.currentRoom = res.data._id;
+                            console.log('currentRoom');
+                            console.log(socket.uInfo.currentRoom);
+                            messageController.getListMessage(res.data._id)
+                                .then((res) => {
+                                    console.log('list-message: ');
+                                    console.log(res.data);
+                                    socket.emit('ssa-list-message', res.data);
+                                }).catch((err) => {
+                                    console.log(err);
+                                })
+                        }).catch((err) => {
+                            console.log(err);
+                        });
+                });
+
+                socket.on('csa-sendMessage', function (data) {
+                    console.log('csa-sendMessage:data: ', data);
+                    messageController.add({
+                        userId: socket.uInfo._id,
+                        roomId: socket.uInfo.currentRoom,
+                        body: data.body,
+                    })
+                        .then((res) => {
+                            console.log(res);
                         }).catch((err) => {
                             console.log(err);
                         });
