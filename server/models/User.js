@@ -16,7 +16,7 @@ const userSchema = new Schema({
     //     minlength: [8, 'The value of path `{PATH}` (`{VALUE}`) is shorter than the minimum allowed length ({MINLENGTH}).'],
     // },
     avatar: { type: String },
-    _socketids: [],
+    _socketids: { type: [String] },
     createdAt: { type: Date, default: Date.now },
     isDeleted: { type: Boolean, default: false },
 })

@@ -10,7 +10,7 @@ const roomSchema = new Schema({
         // required: true,
         // minlength: [5, 'The value of path `{PATH}` (`{VALUE}`) is shorter than the minimum allowed length ({MINLENGTH}).'],
     },
-    connections: { type: [] },
+    connections: { type: [String], required: true, /*unique: true*/ },
     createdAt: { type: Date, default: Date.now },
     isDeleted: { type: Boolean, default: false },
 })

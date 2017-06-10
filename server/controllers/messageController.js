@@ -19,10 +19,9 @@ messageController.add = (data) => {
 
 messageController.getListMessage = (data) => {
     return new Promise((res, rej) => {
-        //validation
-        db.Message.find(
-            { _roomId: data.roomId },
-            function (err, listMessage) {
+        db.Message.find({ _roomId: data.roomId })
+            .populate('_userId', ['username', 'avatar'])
+            .exec(function (err, listMessage) {
                 if (err) rej(err);
                 res({ data: listMessage });
             });

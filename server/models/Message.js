@@ -5,8 +5,8 @@ const { Schema } = mongoose;
 mongoose.Promise = global.Promise;
 
 const messageSchema = new Schema({
-    _userId: { type: Schema.ObjectId, ref: 'User' },
-    _roomId: { type: Schema.ObjectId, ref: 'Room' },
+    _userId: { type: Schema.ObjectId, ref: 'User', required: true, },
+    _roomId: { type: Schema.ObjectId, ref: 'Room', required: true, },
     body: {
         type: String,
         required: true,
@@ -14,7 +14,7 @@ const messageSchema = new Schema({
     },
     createdAt: { type: Date, default: Date.now },
     isDeleted: { type: Boolean, default: false },
-})
+});
 
 //Write some encrption for Password
 const Message = mongoose.model('Message', messageSchema);

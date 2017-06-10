@@ -31,6 +31,20 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                             socket.uInfo = res.data;
                             console.log('logined-uInfo:@@@@@@@@@@@@@@ ');
                             console.log(socket.uInfo);
+                            socket.emit('ssa-login-sucessed', res.data);
+                            roomController.getListRoom(socket.uInfo._id)
+                                .then((res1) => {
+                                    console.log('getListRoom');
+                                    console.log(res1);
+                                    res1.data.forEach(function (room) {
+                                        socket.join(room._id);
+                                    });
+                                    console.log('io.sockets.adapter.rooms');
+                                    console.log(io.sockets.adapter.rooms);
+                                    io.sockets.emit('ssa-list-room', res1.data);
+                                }).catch((err1) => {
+                                    console.log(err1);
+                                });
                             userController.getListUser()
                                 .then((res2) => {
                                     console.log('getListUser');
@@ -50,7 +64,7 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                     console.log('csa-hasOneChat:data: ', data);
                     console.log('csa-hasOneChat:socket.uInfo: ', socket.uInfo);
                     // console.log(socket.uInfo._id, data.u_id);
-                    roomController.checkHasOneChat(socket.uInfo._id.toString(), data.u_id)
+                    roomController.checkHasOneChat(socket.uInfo._id, data.u_id)
                         .then((res) => {
                             if (res.newRoom) {
                                 console.log('newRoom');
@@ -58,9 +72,7 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                             console.log('roomController.checkHasOneChat:: res.data');
                             console.log(res.data);
                             socket.uInfo.currentRoom = res.data._id;
-                            console.log('currentRoom');
-                            console.log(socket.uInfo.currentRoom);
-                            messageController.getListMessage(res.data._id)
+                            messageController.getListMessage({ roomId: res.data._id })
                                 .then((res) => {
                                     console.log('list-message: ');
                                     console.log(res.data);
@@ -82,6 +94,7 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                     })
                         .then((res) => {
                             console.log(res);
+                            io.to(socket.uInfo.currentRoom).emit('ssa-new-message', res.data);
                         }).catch((err) => {
                             console.log(err);
                         });
