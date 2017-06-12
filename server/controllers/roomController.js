@@ -46,19 +46,23 @@ roomController.checkHasOneChat = (uId_1, uId_2) => {
 roomController.getListRoom = (userID) => {
     console.log('roomController.getListRoom: ');
     return new Promise((res, rej) => {
-        db.Room.find({ connections: userID }
-            // 'title, connections'
-            , function (err, rooms) {
-                if (err) rej(err);
-                res({ data: rooms });
-            }
-        );
-        // db.Room.find({ connections: userID })
-        //     .populate('_userId', ['username', 'avatar'])
-        //     .exec(function (err, listMessage) {
+        // db.Room.find({ connections: userID }
+        //     // 'title, connections'
+        //     , function (err, rooms) {
         //         if (err) rej(err);
-        //         res({ data: listMessage });
-        //     });
+        //         res({ data: rooms });
+        //     }
+        // );
+        db.Room.find({ connections: userID },
+            // 'title, connections'
+        )
+            .populate({ path: 'connections', model: 'User' })
+            .exec(function (err, rooms) {
+                if (err) rej(err);
+                console.log('sssssssssssrooms');
+                console.log(rooms);
+                res({ data: rooms });
+            });
     });
 }
 

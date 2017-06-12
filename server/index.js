@@ -65,20 +65,23 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                     console.log('csa-hasOneChat:socket.uInfo: ', socket.uInfo);
                     // console.log(socket.uInfo._id, data.u_id);
                     roomController.checkHasOneChat(socket.uInfo._id, data.u_id)
-                        .then((res) => {
-                            if (res.newRoom) {
+                        .then((roomResult) => {
+                            if (roomResult.newRoom) {
                                 console.log('newRoom');
                             }
                             console.log('roomController.checkHasOneChat:: res.data');
-                            console.log(res.data);
-                            socket.uInfo.currentRoom = res.data._id;
-                            messageController.getListMessage({ roomId: res.data._id })
-                                .then((res) => {
-                                    console.log('list-message: ');
-                                    console.log(res.data);
-                                    socket.emit('ssa-list-message', res.data);
-                                }).catch((err) => {
-                                    console.log(err);
+                            console.log(roomResult.data);
+                            socket.uInfo.currentRoom = roomResult.data._id;
+                            messageController.getListMessage({ roomId: roomResult.data._id })
+                                .then((messageResult) => {
+                                    console.log('roomData: ');
+                                    console.log(messageResult.data);
+                                    socket.emit('ssa-roomData', {
+                                        room: roomResult.data,
+                                        message: messageResult.data,
+                                    });
+                                }).catch((err1) => {
+                                    console.log(err1);
                                 })
                         }).catch((err) => {
                             console.log(err);
@@ -93,8 +96,11 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                         body: data.body,
                     })
                         .then((res) => {
+                            console.log('newMessage');
                             console.log(res);
-                            io.to(socket.uInfo.currentRoom).emit('ssa-new-message', res.data);
+                            io.to(socket.uInfo.currentRoom).emit('ssa-new-message', {
+                                message: res.data
+                            });
                         }).catch((err) => {
                             console.log(err);
                         });

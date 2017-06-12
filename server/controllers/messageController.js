@@ -12,7 +12,10 @@ messageController.add = (data) => {
         });
         message.save(function (err) {
             if (err) rej(err);
-            res({ data: message });
+            message.populate("_userId", function (err1, newMessage) {
+                if (err1) rej(err1);
+                res({ data: newMessage });
+            });
         });
     });
 }
