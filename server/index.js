@@ -60,6 +60,27 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                     console.log('data not found');
                 }
 
+                socket.on('csa-getListMessage', function(idRoom){
+                  roomController.getRoom(idRoom)
+                      .then((roomResult) => {
+                        console.log(roomResult);
+                        messageController.getListMessage({ roomId: roomResult.data._id })
+                            .then((messageResult) => {
+                                console.log('roomData: ');
+                                console.log(messageResult.data);
+                                socket.uInfo.currentRoom = roomResult.data._id;
+                                socket.emit('ssa-roomData', {
+                                    room: roomResult.data,
+                                    message: messageResult.data,
+                                });
+                            }).catch((err1) => {
+                                console.log(err1);
+                            });
+                      }).catch((err) => {
+                          console.log(err);
+                      });
+                })
+
                 socket.on('csa-hasOneChat', function (data) {
                     console.log('csa-hasOneChat:data: ', data);
                     console.log('csa-hasOneChat:socket.uInfo: ', socket.uInfo);

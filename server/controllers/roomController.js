@@ -1,4 +1,5 @@
 import db from './../models';
+var ObjectId = require('mongoose').Types.ObjectId;
 
 const roomController = {};
 
@@ -40,6 +41,21 @@ roomController.checkHasOneChat = (uId_1, uId_2) => {
                 }
             }
         );
+    });
+}
+
+roomController.getRoom = (roomId)=>{
+    return new Promise((res,rej) =>{
+      db.Room.findOne({_id: new ObjectId(roomId)} 
+      // db.Room.find({'_id': 'ObjectId("'+roomId+'")'}
+      , function(err, room){
+          if(err) rej(err);
+          if(room){
+            console.log(room);
+              res({ data: room });
+          }
+        }
+    );
     });
 }
 
