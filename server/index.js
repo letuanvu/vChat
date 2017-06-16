@@ -119,6 +119,7 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                         .then((res) => {
                             console.log('newMessage');
                             console.log(res);
+                            roomController.updateSeen(res.data);
                             io.to(socket.uInfo.currentRoom).emit('ssa-new-message', {
                                 message: res.data
                             });
