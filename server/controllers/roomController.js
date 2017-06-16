@@ -32,7 +32,10 @@ roomController.checkHasOneChat = (uId_1, uId_2) => {
             , function (err, room) {
                 if (err) rej(err);
                 if (room) {
-                    res({ data: room });
+                    roomController.getRoom(room._id)
+                    .then((resultRoom)=>{
+                        res({ data: resultRoom.data });
+                    })
                 } else {
 
                     var seenmessage = [];
@@ -44,7 +47,10 @@ roomController.checkHasOneChat = (uId_1, uId_2) => {
 
                     roomController.add({ connections: connections, seenmessage: seenmessage })
                         .then((newRoom) => {
-                            res({ newRoom: true, data: newRoom });
+                            roomController.getRoom(newRoom._id)
+                            .then((resultRoom)=>{
+                                res({ newRoom: true, data: resultRoom.data });
+                            })
                         }).catch((err) => {
                             rej(err);
                         });
@@ -54,39 +60,29 @@ roomController.checkHasOneChat = (uId_1, uId_2) => {
     });
 }
 
-roomController.updateSeen = (message)=>{
-  console.log('updateSeen');
-  var userSendId = message._userId._id;
-  var roomId = message._roomId;
-  //đang làm
-  db.Room.findOne({_id: new ObjectId(message._roomId)}, function(err, room){
-    room.update({'seenmessage.uid': userSendId},{'$set':{
-      'seenmessage.$.messageid': '1213123'
-    }}, function(err){
-      console.log(err);
-    })
-
+roomController.updateSeenSent = (message)=>{
+  return new Promise((res,rej)=>{
+    console.log('updateSeen');
+    var userSendId = message._userId._id;
+    var roomId = message._roomId;
+    var messId = message._id;
+    db.Room.findOne({_id: new ObjectId(message._roomId)}, function(err, room){
+        // const seenmessageId = room.seenmessage.find(x => x.uid == userSendId)._id;
+        db.Room.update({'seenmessage.uid': userSendId}, {'$set':{
+            'seenmessage.$.messageid': messId,
+        }}, function(err){
+            if(err) rej(err);    
+            res();
+        })
+    });
   });
-
-  // return new Promise((res,rej) =>{
-  //   db.Room.findOne({_id: new ObjectId(roomId)}
-  //   // db.Room.find({'_id': 'ObjectId("'+roomId+'")'}
-  //   , function(err, room){
-  //       if(err) rej(err);
-  //       if(room){
-  //         console.log(room);
-  //           res({ data: room });
-  //       }
-  //     }
-  // );
-  // });
 }
 
 roomController.getRoom = (roomId)=>{
     return new Promise((res,rej) =>{
-      db.Room.findOne({_id: new ObjectId(roomId)}
-      // db.Room.find({'_id': 'ObjectId("'+roomId+'")'}
-      , function(err, room){
+      db.Room.findOne({_id: new ObjectId(roomId)})
+        .populate({ path: 'seenmessage.uid', model: 'User', select:'username' })
+        .exec(function (err, room) {
           if(err) rej(err);
           if(room){
             console.log(room);
@@ -100,13 +96,6 @@ roomController.getRoom = (roomId)=>{
 roomController.getListRoom = (userID) => {
     console.log('roomController.getListRoom: ');
     return new Promise((res, rej) => {
-        // db.Room.find({ connections: userID }
-        //     // 'title, connections'
-        //     , function (err, rooms) {
-        //         if (err) rej(err);
-        //         res({ data: rooms });
-        //     }
-        // );
         db.Room.find({ connections: userID },
             // 'title, connections'
         )
