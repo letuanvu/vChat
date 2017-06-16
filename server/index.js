@@ -119,14 +119,44 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                         .then((res) => {
                             console.log('newMessage');
                             console.log(res);
-                            roomController.updateSeen(res.data);
-                            io.to(socket.uInfo.currentRoom).emit('ssa-new-message', {
-                                message: res.data
+                            roomController.updateSeenSent(res.data)
+                            .then(()=>{
+                                roomController.getRoom(socket.uInfo.currentRoom)
+                                .then((roomRes)=>{
+                                    io.to(socket.uInfo.currentRoom).emit('ssa-new-message', {
+                                        message: res.data,
+                                        seen: roomRes.data.seenmessage
+                                    });
+                                }).catch((err) => {
+                                    console.log(err);
+                                });
+                            }).catch((err) => {
+                                console.log(err);
                             });
                         }).catch((err) => {
                             console.log(err);
                         });
                 });
+
+                socket.on('csa-seenMessage',function(messId){
+                    console.log('csa-seennnnnn');
+                    var mess = {_userId: {_id: socket.uInfo._id}, _roomId: socket.uInfo.currentRoom, _id: messId};
+                    roomController.updateSeenSent(mess)
+                    .then(()=>{
+                        roomController.getRoom(socket.uInfo.currentRoom)
+                        .then((roomRes)=>{
+                            io.to(socket.uInfo.currentRoom).emit('ssa-seenMessage', {
+                                seen: roomRes.data.seenmessage
+                            });
+                            console.log('done-seennnnnn');
+                        }).catch((err) => {
+                            console.log(err);
+                        });
+                    }).catch((err)=>{
+                        console.log(err);
+                    })
+                });
+
             });
 
             socket.on('disconnect', function () {
