@@ -36,12 +36,28 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                                 .then((res1) => {
                                     console.log('getListRoom');
                                     console.log(res1);
-                                    res1.data.forEach(function (room) {
+                                    res1.data.forEach(function (room, index) {
                                         socket.join(room._id);
+
+                                        var messageSeen = room.seenmessage.find(x => x.uid == socket.uInfo._id).messageid;
+                                        
+                                        messageController.getLastestMesage(room._id)
+                                        .then((lastMessageId) => {
+                                            if(lastMessageId.data == messageSeen){
+                                                console.log("đã đọc đến cái mới nhất");
+                                            } else {
+                                                socket.emit('ssa-newmessage-notifi', room._id);
+                                                console.log("mày chưa đọc đến cái mới nhất");
+                                            }
+                                        }).catch((err2) => {
+                                            console.log(err2);
+                                        });
+                                        
                                     });
                                     console.log('io.sockets.adapter.rooms');
                                     console.log(io.sockets.adapter.rooms);
-                                    io.sockets.emit('ssa-list-room', res1.data);
+                                    
+                                    socket.emit('ssa-list-room', res1.data);
                                 }).catch((err1) => {
                                     console.log(err1);
                                 });
