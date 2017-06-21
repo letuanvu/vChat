@@ -44,10 +44,8 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                                         messageController.getLastestMesage(room._id)
                                         .then((lastMessageId) => {
                                             if(lastMessageId.data == messageSeen){
-                                                console.log("đã đọc đến cái mới nhất");
                                             } else {
                                                 socket.emit('ssa-newmessage-notifi', room._id);
-                                                console.log("mày chưa đọc đến cái mới nhất");
                                             }
                                         }).catch((err2) => {
                                             console.log(err2);
@@ -57,7 +55,7 @@ mongoose.connect('mongodb://localhost:27017/vChat', {}).then(
                                     console.log('io.sockets.adapter.rooms');
                                     console.log(io.sockets.adapter.rooms);
                                     
-                                    socket.emit('ssa-list-room', res1.data);
+                                    socket.emit('ssa-list-room', {listRoom: res1.data, currentUsername: socket.uInfo._id});
                                 }).catch((err1) => {
                                     console.log(err1);
                                 });

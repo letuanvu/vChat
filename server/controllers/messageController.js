@@ -27,7 +27,9 @@ messageController.getLastestMesage = (roomId) => {
             // .limit(1)
             .exec(function (err, message) {
                 if (err) rej(err);
-                res({ data: message._id });
+                if(!!message){
+                    res({ data: message._id });
+                }
             });
     });
 }
